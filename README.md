@@ -61,3 +61,46 @@ The component names in the diagram are the DNS names the app expects to use. And
 If we `docker image inspect widgetario/products-db:21.03` we will see the database password is in the default environment variables, so if someone manages to get the image they'll know our production password.
 
 Also the front-end team are experimenting with a new dark mode, and they want to quickly turn it on and off with a config setting
+* Products DB is the simplest - it just needs a password stored and surfaced in the `POSTGRES_PASSWORD` environment variable in the Pod (of course - anything with a password is sensitive data).
+
+* The Stock API is a Go app. It uses an environment variable for the database connection string, and the password will need to match the DB. The team thinks the environment variable name starts with `POSTGRES`.
+
+* The Products API is a Java app. The team who built it left to found a startup and we have no documentation. It's a Spring Boot app though, so the config files are usually called `application.properties` and we'll need to update the password there too.
+
+* The web app is .NET Core. We know quite a lot about this - it reads default config from `/app/appsettings.json` but it will override any settings it finds in `/app/secrets/api.json`. We want to update the URLs for the APIs to use fully-qualified domain names.
+
+* That feature flag for the UI can be set with an environment variable - `Widgetario__Theme` = `dark`.
+  
+**  solution 3**
+
+Enabled local caching for the Stock API (/cache directory) to survive Pod restarts without needing persistent storage.
+
+Switched to a replicated PostgreSQL setup using widgetario/products-db:postgres-replicated.
+
+Configured the Products API to connect to the primary DB, and the Stock API to connect to the secondary.
+
+Updated deployments and cleaned up old persistent volumes and services.Below is the code:
+
+kubectl delete deploy products-db
+kubectl delete svc products-db
+kubectl delete pvc -l app=products-db
+
+kubectl apply -f hackathon/solution-part-3/products-db \
+              -f hackathon/solution-part-3/products-api \
+              -f hackathon/solution-part-3/stock-api \
+              -f hackathon/solution-part-3/web
+
+kubectl rollout restart deploy/products-api deploy/stock-api
+
+**solution 4**
+Configured Ingress resources for clean domain-based routing:
+
+Web app: http://widgetario.local
+
+API: http://api.widgetario.local
+
+Deployed an ingress controller and ensured the services were accessible via standard ports.Below is the code :
+
+./scripts/add-to-hosts.sh widgetario.local 127.0.0.1
+./scripts/add-to-hosts.sh api.widgetario.local 127.0.0.1
+
