@@ -10,12 +10,6 @@ kubectl delete svc products-db
 kubectl delete pvc -l app=products-db
 ```
 
-Deploy the changes:
-
-```
-kubectl apply -f hackathon/solution-part-3/products-db -f hackathon/solution-part-3/products-api  -f hackathon/solution-part-3/stock-api -f hackathon/solution-part-3/web
-```
-
 Restart Pods with changed config:
 
 ```
