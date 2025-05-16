@@ -1,108 +1,108 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-papi
+  name: {{ .Release.Name }}-papi  # Defines the Ingress resource for the 'products-api' service, using the release name as part of the resource name
 spec:
   rules:
-  - host: api.{{ .Values.domainName }}
+  - host: api.{{ .Values.domainName }}  # Defines the domain name to access the service, substituting domainName from values.yaml
     http:
       paths:
-      - path: /
+      - path: /  # Routes the root path to the backend service
         pathType: Prefix
         backend:
           service:
-            name: {{ .Release.Name }}-papi
+            name: {{ .Release.Name }}-papi  # Refers to the service for 'products-api' using the release name
             port: 
-              name: http
+              name: http  # Specifies the service port to be used
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-papi
+  name: {{ .Release.Name }}-papi  # Names the service based on the release name
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}  # Labels the service with the release name
 spec:
   ports:
-    - port: 80
-      targetPort: http
+    - port: 80  # Exposes the service on port 80
+      targetPort: http  # Forwards the traffic to the container's http port
   selector:
-    app: {{ .Release.Name }}
-    component: products-api
-  type: ClusterIP
+    app: {{ .Release.Name }}  # Targets pods with the app label set to the release name
+    component: products-api  # Targets pods with the component label set to 'products-api'
+  type: ClusterIP  # Internal service, only accessible within the cluster
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-papi-dbconfig
+  name: {{ .Release.Name }}-papi-dbconfig  # Secret name dynamically based on the release name
 type: Opaque
 stringData:
   application.properties: |-
-    spring.jpa.database=POSTGRESQL
+    spring.jpa.database=POSTGRESQL  # Spring configuration for PostgreSQL database
     spring.jpa.generate-ddl=false
-    spring.datasource.platform=postgres           
-    {{- if gt .Values.pdbReplicaCount 1.0 }}
+    spring.datasource.platform=postgres
+    {{- if gt .Values.pdbReplicaCount 1.0 }}  # Conditional logic to handle database replication
     spring.datasource.url=jdbc:postgresql://{{ .Release.Name }}-pdb-1.{{ .Release.Name }}-pdb.{{ .Release.Namespace }}.svc.cluster.local:5432/postgres
     {{- else }}
     spring.datasource.url=jdbc:postgresql://{{ .Release.Name }}-pdb-0.{{ .Release.Name }}-pdb.{{ .Release.Namespace }}.svc.cluster.local:5432/postgres
     {{- end }}
-    spring.datasource.username={{ .Values.pdbUsername }}
-    spring.datasource.password={{ .Values.pdbPassword }}
+    spring.datasource.username={{ .Values.pdbUsername }}  # Database username
+    spring.datasource.password={{ .Values.pdbPassword }}  # Database password
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-papi
+  name: {{ .Release.Name }}-papi  # Deployment name dynamically set based on the release name
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}  # Labels the deployment with the release name
 spec:
-  replicas: {{ .Values.papiReplicaCount }}
+  replicas: {{ .Values.papiReplicaCount }}  # Number of replicas for the deployment, set via values.yaml
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
-      component: products-api
+      app: {{ .Release.Name }}  # Selects pods with the app label set to the release name
+      component: products-api  # Selects pods with the component label set to 'products-api'
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
-        component: products-api
+        app: {{ .Release.Name }}  # Labels the pods with the release name
+        component: products-api  # Labels the pods as part of 'products-api'
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/scrape: "true"  # Enables Prometheus scraping for metrics from the app
+        prometheus.io/path: "/actuator/prometheus"  # Path for Prometheus to scrape metrics from
     spec:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: false  # Prevents automatic mounting of the service account token into the container
       containers:
         - name: app
-          image: {{ .Values.papiImage }}
+          image: {{ .Values.papiImage }}  # Docker image for the container, specified in values.yaml
           ports:
-            - containerPort: 80
+            - containerPort: 80  # Exposes port 80 on the container
               name: http
-          {{- if eq .Values.includeReadiness true }}
+          {{- if eq .Values.includeReadiness true }}  # Conditional readiness probe
           readinessProbe:
             httpGet:
               path: /
-              port: http
-            periodSeconds: 20
-            failureThreshold: 1
+              port: http  # Health check path and port for readiness
+            periodSeconds: 20  # Interval between checks
+            failureThreshold: 1  # Number of failed attempts before considering the pod as not ready
           {{- end }}
-          {{- if eq .Values.includeLiveness true }}
+          {{- if eq .Values.includeLiveness true }}  # Conditional liveness probe
           livenessProbe:
             httpGet:
               path: /
-              port: http
-            periodSeconds: 30
-            initialDelaySeconds: 20
+              port: http  # Health check path and port for liveness
+            periodSeconds: 30  # Interval between checks
+            initialDelaySeconds: 20  # Delay before starting the first liveness check
           {{- end }}
-          {{- if eq .Values.includeResources true }}
+          {{- if eq .Values.includeResources true }}  # Conditional resource limits
           resources:
             limits:
-              cpu: 300m
-              memory: 300Mi   
+              cpu: 300m  # CPU resource limit
+              memory: 300Mi  # Memory resource limit
           {{- end }}
           volumeMounts:
             - name: db-properties
-              mountPath: "/app/config"
-              readOnly: true
+              mountPath: "/app/config"  # Mounts the secret as a volume in the container
+              readOnly: true  # Ensures the volume is read-only
       volumes:
         - name: db-properties
           secret:
-            secretName: {{ .Release.Name }}-papi-dbconfig
+            secretName: {{ .Release.Name }}-papi-dbconfig  # Refers to the secret holding the database configuration
