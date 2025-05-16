@@ -9,7 +9,7 @@ kubectl scale deploy/products-api deploy/stock-api deploy/web sts/products-db --
 _Deploy the Helm chart to a new namespace using a sample variables file:_
 
 ```
-helm install widg-uat -n widg-uat --create-namespace -f hackathon/files/helm/uat.yaml hackathon/solution-part-7/helm/widgetario
+helm install widg-uat -n widg-uat --create-namespace -f kubernetes_hackathon/files/helm/uat.yaml kubernetes_hackathon/solution-part-7/helm/widgetario
 ```
 
 _Check the objects:_
@@ -43,7 +43,7 @@ curl -k https://api.widgetario.uat/products
 _Deploy the build infrastructure:_
 
 ```
-kubectl apply -f hackathon/solution-part-7/infrastructure
+kubectl apply -f kubernetes_hackathon/solution-part-7/infrastructure
 ```
 
 _When it's all running, push your local code to Gogs:_
@@ -82,7 +82,7 @@ You can edit the Jenkisfile, or change the job to use the [part 7 solution Jenki
 
 - open http://localhost:30880/job/widgetario/configure
 - scroll down to _Script Path_
-- change the path to `hackathon/solution-part-7/Jenkinsfile`
+- change the path to `kubernetes_hackathon/solution-part-7/Jenkinsfile`
 
 Build again and confirm the latest images are deployed in the new namespace.
 
