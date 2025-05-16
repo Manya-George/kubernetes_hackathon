@@ -1,4 +1,3 @@
-Here’s an updated version of your `README.md` file with enhanced clarity, consistent formatting, and improved sections to guide users through your Kubernetes setup and solutions. I’ve made sure to keep the instructions concise and well-structured for easy navigation.
 
 ---
 
@@ -11,6 +10,7 @@ This project demonstrates a containerized microservice architecture deployed on 
 ### Host Machine:
 
 * **VirtualBox**: Ensure it's installed on your host machine.
+*  **UBUNTU-24.04.2**: This is the operating system of the virtual machine.
 * **Internet Connection**: Required for installing dependencies inside the Ubuntu VM.
 
 ### Inside Ubuntu VM (20.04 or later):
