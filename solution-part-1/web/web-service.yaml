@@ -1,31 +1,34 @@
-apiVersion: v1
-kind: Service
+# LoadBalancer Service for the widgetario web component
+apiVersion: v1  # Specifies the API version for the Service resource, which is v1.
+kind: Service   # The kind of resource being defined here is a Service.
 metadata:
-  name: widgetario-web-lb
+  name: widgetario-web-lb  # The name of the Service is widgetario-web-lb (for LoadBalancer).
   labels:
-    kubernetes.courselabs.co: hackathon
-    app: widgetario
+    kubernetes.courselabs.co: hackathon  # Custom label for grouping resources related to a hackathon project.
+    app: widgetario  # Label indicating that this Service is part of the widgetario application.
 spec:
   ports:
-    - port: 8080
-      targetPort: http
-  selector:  
-    app: widgetario
-    component: web
-  type: LoadBalancer
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: widgetario-web-np
-  labels:
-    app: widgetario
-spec:
-  ports:
-    - port: 8080
-      targetPort: http
-      nodePort: 30008
+    - port: 8080  # The Service exposes port 8080 for external or internal traffic.
+      targetPort: http  # Traffic on port 8080 will be forwarded to the "http" port in the Pods.
   selector:
-    app: widgetario
-    component: web
-  type: NodePort
+    app: widgetario  # This Service will select Pods with the label app: widgetario.
+    component: web  # This Service will specifically select Pods with the label component: web.
+  type: LoadBalancer  # The Service is of type LoadBalancer, meaning it is externally accessible and managed by a cloud provider's load balancer.
+
+---
+# NodePort Service for the widgetario web component
+apiVersion: v1  # Specifies the API version for the Service resource, which is v1.
+kind: Service   # The kind of resource being defined here is a Service.
+metadata:
+  name: widgetario-web-np  # The name of the Service is widgetario-web-np (for NodePort).
+  labels:
+    app: widgetario  # Label indicating that this Service is part of the widgetario application.
+spec:
+  ports:
+    - port: 8080  # The Service exposes port 8080 for external or internal traffic.
+      targetPort: http  # Traffic on port 8080 will be forwarded to the "http" port in the Pods.
+      nodePort: 30008  # The Service is exposed on nodePort 30008, allowing external access through any node in the cluster on this port.
+  selector:
+    app: widgetario  # This Service will select Pods with the label app: widgetario.
+    component: web  # This Service will specifically select Pods with the label component: web.
+  type: NodePort  # The Service is of type NodePort, meaning it can be accessed externally through any node in the cluster on the specified nodePort (30008).
