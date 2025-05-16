@@ -11,3 +11,10 @@ Cleanup:
 ```
 kubectl delete all,statefulset,pvc,secret,configmap -l kubernetes.courselabs.co=hackathon
 ```
+
+Deployment:
+
+```
+kubectl apply -f kubernetes_hackathon/solution-part-5/ingress-controller -f kubernetes_hackathon/solution-part-5/products-db -f kubernetes_hackathon/solution-part-5/products-api  -f kubernetes_hackathon/solution-part-5/stock-api -f kubernetes_hackathon/solution-part-5/web
+```
+
