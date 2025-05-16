@@ -1,28 +1,28 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Specifies the API version for the Deployment resource, which is apps/v1.
+kind: Deployment    # The kind of resource being defined here is a Deployment.
 metadata:
-  name: products-db
+  name: products-db  # The name of the Deployment is products-db, which indicates it manages Pods for the database.
   labels:
-    kubernetes.courselabs.co: hackathon
-    app: widgetario
+    kubernetes.courselabs.co: hackathon  # Custom label for organizing resources related to the hackathon project.
+    app: widgetario  # Label indicating that this Deployment belongs to the widgetario application.
 spec:
   selector:
     matchLabels:
-        app: widgetario
-        component: products-db
+      app: widgetario  # The Deployment selects Pods with the label app: widgetario.
+      component: products-db  # The Deployment specifically targets Pods with the label component: products-db.
   template:
     metadata:
-      labels: 
-        app: widgetario
-        component: products-db
-        hackathon: part-1
+      labels:
+        app: widgetario  # Label applied to the Pods created by this Deployment, marking them as part of widgetario.
+        component: products-db  # Label indicating that these Pods provide the products-db service.
+        hackathon: part-1  # Custom label to organize Pods related to the first part of the hackathon project.
     spec:
       containers:
-        - name: app
-          image: widgetario/products-db:21.03
+        - name: app  # The container name is 'app'.
+          image: widgetario/products-db:21.03  # The container runs the image 'widgetario/products-db:21.03', which presumably includes the database.
           ports:
-            - containerPort: 5432
-              name: postgres
+            - containerPort: 5432  # The container exposes port 5432, the default port for PostgreSQL.
+              name: postgres  # The port name is "postgres", matching the Service's targetPort.
           envFrom:
-            - secretRef:
-                name: products-db-password
+            - secretRef:  # Environment variables are being sourced from a Kubernetes Secret.
+                name: products-db-password  # The Secret named 'products-db-password' is referenced to load sensitive data, likely database credentials.
