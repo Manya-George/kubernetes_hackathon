@@ -104,6 +104,12 @@ minikube service <service-name> --url
 
 Widgetario, a company that sells gadgets, runs its public web app on Kubernetes. All components are packaged into container images and published on Docker Hub. In this solution, we start with a simple setup using one replica for each component. We were able to ping `127.0.0.1` or browse port `8080` on the cluster.
 
+To deploy after Cloning and opening the kubernetes_hackathon
+```bash
+cd kubernetes_hackathon
+
+kubectl apply -f kubernetes_hackathon/solution-part-1/products-db -f kubernetes_hackathon/solution-part-1/products-api  -f kubernetes_hackathon/solution-part-1/stock-api -f kubernetes_hackathon/solution-part-1/web
+```
 ### Solution 2: Secure Configuration
 
 The `widgetario/products-db:21.03` image exposes the database password through environment variables. This solution addresses the security issue by:
@@ -136,10 +142,10 @@ kubectl delete deploy products-db
 kubectl delete svc products-db
 kubectl delete pvc -l app=products-db
 
-kubectl apply -f hackathon/solution-part-3/products-db \
-              -f hackathon/solution-part-3/products-api \
-              -f hackathon/solution-part-3/stock-api \
-              -f hackathon/solution-part-3/web
+kubectl apply -f kubernetes_hackathon/solution-part-3/products-db \
+              -f kubernetes_hackathon/solution-part-3/products-api \
+              -f kubernetes_hackathon/solution-part-3/stock-api \
+              -f kubernetes_hackathon/solution-part-3/web
 
 kubectl rollout restart deploy/products-api deploy/stock-api
 ```
