@@ -1,33 +1,33 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Specifies the API version for the Deployment resource, which is apps/v1.
+kind: Deployment     # The kind of resource being defined here is a Deployment.
 metadata:
-  name: products-api
+  name: products-api  # The name of the Deployment is products-api.
   labels:
-    app: widgetario
-    kubernetes.courselabs.co: hackathon
+    app: widgetario  # Label indicating that this Deployment is part of the widgetario application.
+    kubernetes.courselabs.co: hackathon  # Custom label for grouping resources related to a hackathon project.
 spec:
   selector:
-    matchLabels:
-        app: widgetario
-        component: products-api
-  template:
+    matchLabels:  # Defines the labels that should be used to select the Pods controlled by this Deployment.
+      app: widgetario  # Selects Pods with the label app: widgetario.
+      component: products-api  # Selects Pods with the label component: products-api.
+  template:  # The Pod template, which defines the configuration for the Pods created by this Deployment.
     metadata:
       labels:
-        app: widgetario
-        component: products-api
-        hackathon: part-1
+        app: widgetario  # Labels the Pods as part of the widgetario application.
+        component: products-api  # Labels the Pods as part of the products-api component.
+        hackathon: part-1  # Custom label indicating that these Pods are part of the first part of the hackathon.
     spec:
       containers:
-        - name: app
-          image: widgetario/products-api:21.03
+        - name: app  # The name of the container inside the Pod.
+          image: widgetario/products-api:21.03  # The Docker image used for this container (products-api service version 21.03).
           ports:
-            - containerPort: 80
-              name: http
+            - containerPort: 80  # The container exposes port 80 (typically used for HTTP traffic).
+              name: http  # The port is named "http" for clarity in networking configurations.
           volumeMounts:
-            - name: db-properties
-              mountPath: "/app/config"
-              readOnly: true
+            - name: db-properties  # The volume mount is linked to a volume named db-properties.
+              mountPath: "/app/config"  # The volume is mounted at the specified path inside the container.
+              readOnly: true  # The volume is mounted as read-only inside the container, meaning the container cannot modify it.
       volumes:
-        - name: db-properties
+        - name: db-properties  # Defines a volume named db-properties, which will hold the secret values.
           secret:
-            secretName: products-api-db
+            secretName: products-api-db  # The volume is backed by a Secret named products-api-db, containing sensitive configuration or credentials.
