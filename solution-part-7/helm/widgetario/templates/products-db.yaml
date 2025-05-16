@@ -1,101 +1,101 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-pdb
+  name: {{ .Release.Name }}-pdb  # The service name is dynamically set using the release name
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}  # Labels the service with the release name
 spec:
   ports:
-    - port: 5432
-      targetPort: postgres
+    - port: 5432  # Exposes the service on PostgreSQL's default port (5432)
+      targetPort: postgres  # Forwards traffic to the 'postgres' container port
   selector:
-    app: {{ .Release.Name }}
-    component: products-db
-  clusterIP: None
+    app: {{ .Release.Name }}  # Targets pods with the app label matching the release name
+    component: products-db  # Targets pods with the component label set to 'products-db'
+  clusterIP: None  # Makes this service headless, allowing direct access to pods for StatefulSet usage
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-pdb-env
+  name: {{ .Release.Name }}-pdb-env  # ConfigMap for storing environment variables, named dynamically
 data:
-  POSTGRES_PRIMARY_NAME: {{ .Release.Name }}-pdb-0
-  POSTGRES_PRIMARY_FQDN: {{ .Release.Name }}-pdb-0.{{ .Release.Name }}-pdb.{{ .Release.Namespace }}.svc.cluster.local
+  POSTGRES_PRIMARY_NAME: {{ .Release.Name }}-pdb-0  # Defines the primary pod's name for the PostgreSQL database
+  POSTGRES_PRIMARY_FQDN: {{ .Release.Name }}-pdb-0.{{ .Release.Name }}-pdb.{{ .Release.Namespace }}.svc.cluster.local  # Fully qualified domain name of the primary pod
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-pdb-password
+  name: {{ .Release.Name }}-pdb-password  # Secret storing the database credentials, dynamically named
 type: Opaque
 stringData:
-  POSTGRES_PASSWORD: {{ .Values.pdbPassword }}
-  PGPASSWORD: {{ .Values.pdbPassword }}
+  POSTGRES_PASSWORD: {{ .Values.pdbPassword }}  # Database password pulled from values.yaml
+  PGPASSWORD: {{ .Values.pdbPassword }}  # Sets the environment variable for PostgreSQL password
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Release.Name }}-pdb
+  name: {{ .Release.Name }}-pdb  # StatefulSet name dynamically based on release name
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}  # Labels the StatefulSet with the release name
 spec:
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
-      component: products-db
-  serviceName: {{ .Release.Name }}-pdb
-  replicas: {{ .Values.pdbReplicaCount }}
+      app: {{ .Release.Name }}  # Selects pods with the app label matching the release name
+      component: products-db  # Selects pods with the component label set to 'products-db'
+  serviceName: {{ .Release.Name }}-pdb  # Refers to the headless service for managing StatefulSet pods
+  replicas: {{ .Values.pdbReplicaCount }}  # Specifies the number of replicas (Pods) based on values.yaml
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
-        component: products-db
+        app: {{ .Release.Name }}  # Labels the pods with the release name
+        component: products-db  # Labels the pods as part of 'products-db'
       annotations:
-        prometheus.io/scrape: "false"
-    spec:      
-      automountServiceAccountToken: false
+        prometheus.io/scrape: "false"  # Disables Prometheus scraping for these pods (if not required)
+    spec:
+      automountServiceAccountToken: false  # Prevents automatic mounting of the service account token into the container
       containers:
         - name: app
-          image: {{ .Values.pdbImage }}
+          image: {{ .Values.pdbImage }}  # Image for the PostgreSQL database container, specified in values.yaml
           envFrom:
             - configMapRef:
-                name: {{ .Release.Name }}-pdb-env
+                name: {{ .Release.Name }}-pdb-env  # References the ConfigMap for environment variables
             - secretRef:
-                name: {{ .Release.Name }}-pdb-password
+                name: {{ .Release.Name }}-pdb-password  # References the Secret for database credentials
           ports:
-            - containerPort: 5432
+            - containerPort: 5432  # Exposes port 5432 for PostgreSQL access within the container
               name: postgres
-          {{- if eq .Values.includeReadiness true }}
+          {{- if eq .Values.includeReadiness true }}  # Conditional inclusion of a readiness probe
           readinessProbe:
             tcpSocket:
-              port: postgres
-            periodSeconds: 10
-            initialDelaySeconds: 10
-            failureThreshold: 1
+              port: postgres  # Checks PostgreSQL availability using TCP on the exposed port
+            periodSeconds: 10  # Period between each probe
+            initialDelaySeconds: 10  # Delay before the first readiness check
+            failureThreshold: 1  # Number of failed attempts before marking the pod as not ready
           {{- end }}
-          {{- if eq .Values.includeLiveness true }}
+          {{- if eq .Values.includeLiveness true }}  # Conditional inclusion of a liveness probe
           livenessProbe:
             exec:
-              command: ["pg_isready", "-h", "localhost"]
-            periodSeconds: 60
-            initialDelaySeconds: 20
-            failureThreshold: 2
+              command: ["pg_isready", "-h", "localhost"]  # Executes 'pg_isready' command to check PostgreSQL's health
+            periodSeconds: 60  # Interval between each liveness probe
+            initialDelaySeconds: 20  # Delay before starting the first liveness check
+            failureThreshold: 2  # Number of failed attempts before marking the pod as unhealthy
           {{- end }}
-          {{- if eq .Values.includeResources true }}
+          {{- if eq .Values.includeResources true }}  # Conditional inclusion of resource limits
           resources:
             limits:
-              cpu: 200m
-              memory: 150Mi
-          {{- end }} 
+              cpu: 200m  # CPU resource limit
+              memory: 150Mi  # Memory resource limit
+          {{- end }}
           volumeMounts:
             - name: data
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql/data  # Mounts the persistent volume at this path in the container
   volumeClaimTemplates:
   - metadata:
-      name: data
+      name: data  # Defines the name of the PersistentVolumeClaim (PVC)
       labels:
-        app: widgetario
+        app: widgetario  # Labels the PVC with the app label
     spec:
       accessModes: 
-       - ReadWriteOnce
+       - ReadWriteOnce  # Allows only one pod to write to the volume at a time
       resources:
         requests:
-          storage: {{ .Values.pdbStorageSize }}
+          storage: {{ .Values.pdbStorageSize }}  # Requests a certain storage size for the PVC, specified in values.yaml
