@@ -1,36 +1,36 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Specifies the API version for the Deployment resource, which is apps/v1.
+kind: Deployment    # The kind of resource being defined is a Deployment. A Deployment manages the deployment of Pods.
 metadata:
-  name: web
+  name: web  # The name of the Deployment is 'web'. This is used to identify and manage the Deployment.
   labels:
-    kubernetes.courselabs.co: hackathon
-    app: widgetario
+    kubernetes.courselabs.co: hackathon  # Custom label to categorize resources related to the hackathon project.
+    app: widgetario  # Label indicating that this Deployment is for the widgetario application.
 spec:
   selector:
     matchLabels:
-        app: widgetario
-        component: web
+        app: widgetario  # Selector that matches Pods with the label 'app: widgetario'.
+        component: web  # Selector that matches Pods with the label 'component: web'.
   template:
     metadata:
-      labels: 
-        app: widgetario
-        component: web
-        hackathon: part-1
+      labels:
+        app: widgetario  # Label applied to the Pods created by this Deployment.
+        component: web  # Label indicating that these Pods belong to the 'web' component.
+        hackathon: part-1  # Custom label for organizing Pods related to 'part-1' of the hackathon.
     spec:
       containers:
-        - name: app
-          image: widgetario/web:21.03
+        - name: app  # The name of the container within the Pod.
+          image: widgetario/web:21.03  # The Docker image to use for the container.
           ports:
-            - containerPort: 80
-              name: http
+            - containerPort: 80  # Port exposed by the container (the web service will be available on this port).
+              name: http  # The name of the port, which is 'http' in this case.
           envFrom:
             - configMapRef:
-                name: web-features
+                name: web-features  # References the 'web-features' ConfigMap to inject environment variables into the container.
           volumeMounts:
-            - name: api-config
-              mountPath: "/app/secrets"
-              readOnly: true
+            - name: api-config  # Name of the volume to mount.
+              mountPath: "/app/secrets"  # The directory inside the container where the volume will be mounted.
+              readOnly: true  # The volume is mounted as read-only inside the container.
       volumes:
-        - name: api-config
+        - name: api-config  # The name of the volume that will be used in the container.
           secret:
-            secretName: web-api
+            secretName: web-api  # The volume uses a Kubernetes Secret named 'web-api' to populate its contents.
