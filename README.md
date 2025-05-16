@@ -191,34 +191,11 @@ All the API and web servers publish metrics, so we don't need to change any code
 - deploy the changes and check all the components are having metrics stored in Prometheus
 - open Grafana and load the dashboard from `kubernetes_hackathon/files/grafana-dashboard.json`; use the app and confirm all the visualizations show data.
 
-Here's the dashboard you should see:
-
-![](/img/hackathon-grafana.png)
-
 And then you'll also need to set up centralized logging:
 
 - run the EFK stack to collect and store logs in the app namespace
 - the dev team say the web app writes logs to a file, so you'll need to add a sidecar container to print logs from `/logs/app.log` in the app container
 - open Kibana and load the dashboard from `kubernetes_hackathon/files/kibana-dashboard.ndjson`; check the visualizations to see every component is writing logs
-
-Here's what the Kibana dashboard should look like:
-
-![](/img/hackathon-kibana.png)
-
-<details>
-  <summary>Hints</summary>
-
-The monitoring and logging stacks are standard components, so you can run them from the specs we used in earlier labs. 
-
-You won't need to tweak the Prometheus or Fluent Bit configuration, unless you're using a custom namespace for your Widgetario Pods...
-
-</details><br />
-
-The app will still look the same. You should see those fancy dashboards and be able to search for logs for each component. 
-
-<details>
-  <summary>Solution</summary>
-
 
 
 ```
@@ -237,51 +214,103 @@ kubectl apply -f kubernetes_hackathon/solution-part-6/monitoring -f kubernetes_h
 The last thing we need is a full CI/CD pipeline to build from source code and deploy to a test environment.
 
 We've settled on Helm for packaging, so the first task is to work up the YAML specs into a Helm chart. The chart should support:
-
 - multiple release in the same namespace
 - variables for image tags, replica counts, and whether resource limits should be included
 - app configuration per release, including the database password and the web theme
 
-> We'll be using standard deployments for the ingress controller, monitoring and logging stacks so you don't need to build Helm charts for those
-
-Deploy a second instance of the Widgetario app in your cluster using Helm, with the values file [hackathon/files/helm/uat.yaml](./files/helm/uat.yaml). Confirm you can access it on a different port from the original, and all the Pods are talking to the right components.
+We'll be using standard deployments for the ingress controller, monitoring and logging stacks so you don't need to build Helm charts for those
 
 Then we need to put together the continuous integration pipeline:
 
 - we'll use Jenkins, BuildKit and Gogs to power the pipeline
 - you'll need to create a registry Secret to push to Docker Hub (or your own registry)
-- the source code is all in the `/hackathon/project` folder, which is where you'll find the [Jenkinsfile](./project/Jenkinsfile) with the build steps already in it
-
-You should be able to add your local Gogs server as a new Git remote and push this repository to it. Then your Jenkins build should build images for the database, APIs and web server and push them all to your container registry, with a version number in the tag.
+- the source code is all in the `/hackathon/project` folder
 
 So then we're ready to add continuous deployment:
 
 - extend the Jenkinsfile to add the deployment steps
 - use the Helm chart for deploying to a test namespace
-- deploy the chart with the values file [hackathon/files/helm/smoke-test.yaml](./files/helm/smoke-test.yaml)
+- deploy the chart with the values file 
 - the deployment needs to use the latest images which were pushed in the build.
 
 Now when you trigger the build from Jenkins you should see a new version of the app deployed in your test namespace, running all the latest image versions.
 
-<details>
-  <summary>Hints</summary>
-
-If you've got this far, you probably don't need any hints :) The infrastructure stack we want to run is the same one we used in an earlier lab, so you can use those specs as the basis.
-
-The default Jenkins setup from that lab creates a project which points to a different Jenkinsfile - you'll need to edit the path in the job.
-
-You may be running low on resources, so you can scale down the existing deployment:
 
 ```
-kubectl scale deploy/products-api deploy/stock-api deploy/web sts/products-db --replicas 0
+# On Windows (run as Admin)
+./scripts/add-to-hosts.ps1 widgetario.uat 127.0.0.1
+./scripts/add-to-hosts.ps1 api.widgetario.uat 127.0.0.1
+
+# OR on Linux/macOS
+./scripts/add-to-hosts.sh widgetario.uat 127.0.0.1
+./scripts/add-to-hosts.sh api.widgetario.uat 127.0.0.1
 ```
 
-And remember the registry secret needs to contain your own credentials, and the image name you build needs to use a repository which you have permission to push to.
+Try the Products API:
 
-</details><br />
+```
+curl -k https://api.widgetario.uat/products
+```
 
-<details>
-  <summary>Solution</summary>
+> Browse to http://widgetario.uat; you'll see a new _Buy_ button from the latest image update
+
+_Deploy the build infrastructure:_
+
+```
+kubectl apply -f kubernetes_hackathon/solution-part-7/infrastructure
+```
+
+_When it's all running, push your local code to Gogs:_
+
+```
+git remote add hackathon http://localhost:30031/kiamol/kiamol.git
+
+
+_Create a configmap with the details for the image name - be sure to use a registry and domain you have push access for:_
+
+```
+kubectl -n infra create configmap build-config --from-literal=REGISTRY=docker.io  --from-literal=REPOSITORY=$REGISTRY_USER 
+```
+
+_Restart Jenkins to load the latest config:_
+
+```
+kubectl rollout restart deploy/jenkins -n infra
+```
+
+> Browse to Jenkins http://localhost:30007, sign in with the `kiamol` username and password
+
+Open the Widgetario job in Jenkins, enable and build it. Confirm that your images build and are pushed with the correct tags.
+
+_Add the Helm deploy stage to Jenkins:_
+
+You can edit the Jenkisfile:
+
+- open http://localhost:30880/job/widgetario/configure
+- scroll down to _Script Path_
+- change the path to `hackathon/solution-part-7/Jenkinsfile`
+
+Build again and confirm the latest images are deployed in the new namespace.
+
+_Add smoke test domain to hosts file:_
+
+```
+# On Windows (run as Admin)
+./scripts/add-to-hosts.ps1 widgetario.smoke 127.0.0.1
+./scripts/add-to-hosts.ps1 api.widgetario.smoke 127.0.0.1
+
+# OR on Linux/macOS
+./scripts/add-to-hosts.sh widgetario.smoke 127.0.0.1
+./scripts/add-to-hosts.sh api.widgetario.smoke 127.0.0.1
+```
+
+Check the Products API:
+
+```
+curl -k https://api.widgetario.smoke/products
+```
+
+> And test the app at http://widgetario.smoke
 
 
 ## License
