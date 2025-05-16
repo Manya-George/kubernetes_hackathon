@@ -1,25 +1,25 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Specifies the API version for the Deployment resource, which is apps/v1.
+kind: Deployment     # The kind of resource being defined here is a Deployment.
 metadata:
-  name: products-db
+  name: products-db  # The name of the Deployment is products-db.
   labels:
-    app: widgetario
-    kubernetes.courselabs.co: hackathon
+    app: widgetario  # Label indicating that this Deployment is part of the widgetario application.
+    kubernetes.courselabs.co: hackathon  # Custom label used to group resources related to a hackathon project.
 spec:
   selector:
-    matchLabels:
-        app: widgetario
-        component: products-db
-  template:
+    matchLabels:  # Defines the labels that should be used to select the Pods controlled by this Deployment.
+      app: widgetario  # Selects Pods with the label app: widgetario.
+      component: products-db  # Selects Pods with the label component: products-db.
+  template:  # The Pod template, which defines the configuration for the Pods created by this Deployment.
     metadata:
-      labels: 
-        app: widgetario
-        component: products-db
-        hackathon: part-1
+      labels:  # The labels applied to the Pods created by this Deployment.
+        app: widgetario  # Labels the Pods as part of the widgetario application.
+        component: products-db  # Labels the Pods as part of the products-db component.
+        hackathon: part-1  # Custom label indicating that these Pods are part of the first part of the hackathon.
     spec:
       containers:
-        - name: app
-          image: widgetario/products-db:21.03
+        - name: app  # The name of the container within the Pod.
+          image: widgetario/products-db:21.03  # The Docker image used for this container (a PostgreSQL database).
           ports:
-            - containerPort: 5432
-              name: postgres
+            - containerPort: 5432  # The container exposes port 5432 (default for PostgreSQL).
+              name: postgres  # The port is named "postgres" for clarity in networking configurations.
