@@ -1,15 +1,15 @@
-apiVersion: v1
-kind: Service
+apiVersion: v1  # Specifies the API version for the Service resource, which is v1.
+kind: Service   # The kind of resource being defined here is a Service.
 metadata:
-  name: products-db
+  name: products-db  # The name of the Service is products-db.
   labels:
-    kubernetes.courselabs.co: hackathon
-    app: widgetario
+    kubernetes.courselabs.co: hackathon  # Custom label for grouping resources related to a hackathon project.
+    app: widgetario  # Label indicating that this Service is part of the widgetario application.
 spec:
   ports:
-    - port: 5432
-      targetPort: postgres
+    - port: 5432  # The Service exposes port 5432 for external or internal traffic.
+      targetPort: postgres  # Traffic on port 5432 will be forwarded to the "postgres" port on the Pods.
   selector:
-    app: widgetario
-    component: products-db
-  type: ClusterIP
+    app: widgetario  # The Service selects Pods with the label app: widgetario.
+    component: products-db  # The Service selects Pods with the label component: products-db.
+  type: ClusterIP  # The Service is of type ClusterIP, meaning it is only accessible within the Kubernetes cluster.
