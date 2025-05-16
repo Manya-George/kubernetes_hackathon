@@ -104,9 +104,8 @@ minikube service <service-name> --url
 
 Widgetario, a company that sells gadgets, runs its public web app on Kubernetes. All components are packaged into container images and published on Docker Hub. In this solution, we start with a simple setup using one replica for each component. We were able to ping `127.0.0.1` or browse port `8080` on the cluster.
 
-To deploy after Cloning and opening the kubernetes_hackathon
+To deploy after Cloning 
 ```bash
-cd kubernetes_hackathon
 
 kubectl apply -f kubernetes_hackathon/solution-part-1/products-db -f kubernetes_hackathon/solution-part-1/products-api  -f kubernetes_hackathon/solution-part-1/stock-api -f kubernetes_hackathon/solution-part-1/web
 ```
