@@ -20,6 +20,12 @@ This project demonstrates a containerized microservice architecture deployed on 
 * Kubectl
 * Git
 
+To clone our repo
+    - Open a terminal (PowerShell on Windows; any shell on Linux/macOS) 
+    - Run: `git clone https://github.com/kubernetes_hackathon.git`
+  
+
+
 ## Setup Instructions
 
 ### 1. Update System & Install Dependencies
