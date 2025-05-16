@@ -219,26 +219,18 @@ The app will still look the same. You should see those fancy dashboards and be a
 <details>
   <summary>Solution</summary>
 
-If you didn't get part 6 finished, you can check out the specs in the sample solution from `hackathon/solution-part-6`. The specs in the `widgetario` folder have been re-organised to have one YAML files for each component.
 
-Deploy the sample solution and you can continue to part 7:
 
 ```
-kubectl apply -f hackathon/solution-part-6/monitoring -f hackathon/solution-part-6/logging -f hackathon/solution-part-6/ingress-controller -f hackathon/solution-part-6/widgetario
+kubectl apply -f kubernetes_hackathon/solution-part-6/monitoring -f kubernetes_hackathon/solution-part-6/logging -f kubernetes_hackathon/solution-part-6/ingress-controller -f kubernetes_hackathon/solution-part-6/widgetario
 ```
 
-There's a change to the StatefulSet spec (to explicitly opt out of metrics collection), and it will take a while for the rollout to complete.
 
-You can browse to the UIs using NodePort or LoadBalancer Services:
-
-```
-kubectl get svc -A -l kubernetes.courselabs.co=hackathon
-```
 * Grafana on http://localhost:30003 or http://localhost:3000
 
 * Kibana on http://localhost:30005 or http://localhost:5601
 
-</details><br/>
+
 
 ## Part 7 - CI/CD
 
