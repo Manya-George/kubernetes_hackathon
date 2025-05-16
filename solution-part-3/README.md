@@ -15,8 +15,7 @@ Restart Pods with changed config:
 ```
 kubectl rollout restart deploy/products-api deploy/stock-api
 ```
-Deployment
-
+to deploy after cloning this repo
 ```
 kubectl apply -f kubernetes_hackathon/solution-part-3/products-db -f kubernetes_hackathon/solution-part-3/products-api  -f kubernetes_hackathon/solution-part-3/stock-api -f kubernetes_hackathon/solution-part-3/web
 ```
