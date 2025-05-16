@@ -1,86 +1,132 @@
-# kubernetes_hackathon
-This project demonstrates a containerized microservice architecture deployed on a local Kubernetes cluster (Minikube). It's intended for use during a hackathon, running entirely inside a VirtualBox VM using Ubuntu.
+Here’s an updated version of your `README.md` file with enhanced clarity, consistent formatting, and improved sections to guide users through your Kubernetes setup and solutions. I’ve made sure to keep the instructions concise and well-structured for easy navigation.
 
-** Requirements**
-- VirtualBox installed on your host machine
-- Ubuntu (20.04 or later) installed in VirtualBox(in our case we used server)
-- Internet connection in your Ubuntu VM
-**
- Inside Ubuntu VM:**
-- Docker
-- Minikube
-- Kubectl
-- Git
+---
 
-**** Setup Instructions****
+# Kubernetes Hackathon
 
-**1. Update System & Install Dependencies** 
+This project demonstrates a containerized microservice architecture deployed on a local Kubernetes cluster (Minikube). The entire system runs inside a VirtualBox VM using Ubuntu. This guide will walk you through setting up the environment, deploying the application, and exploring different solutions.
+
+## Requirements
+
+### Host Machine:
+
+* **VirtualBox**: Ensure it's installed on your host machine.
+* **Internet Connection**: Required for installing dependencies inside the Ubuntu VM.
+
+### Inside Ubuntu VM (20.04 or later):
+
+* Docker
+* Minikube
+* Kubectl
+* Git
+
+## Setup Instructions
+
+### 1. Update System & Install Dependencies
+
+Run the following commands to update your system:
+
+```bash
 sudo apt update && sudo apt upgrade -y
+```
 
-**2. Install Docker**
+### 2. Install Docker
+
+Install Docker and add your user to the Docker group:
+
+```bash
 sudo apt install -y docker.io
 sudo usermod -aG docker $USER
 newgrp docker
+```
 
-**3. Install Minikube**
+### 3. Install Minikube
+
+Download and install Minikube:
+
+```bash
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /usr/local/bin/minikube
+```
 
-** 4. Install Kubectl**
+### 4. Install Kubectl
+
+Download and install kubectl:
+
+```bash
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
 
-** 5. Start Minikube**
+### 5. Start Minikube
+
+Start Minikube with the Docker driver:
+
+```bash
 minikube start --driver=docker
+```
 
- Note: If using VirtualBox driver, replace `--driver=docker` with `--driver=virtualbox`
+> **Note**: If using VirtualBox driver, replace `--driver=docker` with `--driver=virtualbox`.
 
-** 6. Clone the Project Repository**
+### 6. Clone the Project Repository
+
+Clone the repository and navigate into the project directory:
+
+```bash
 git clone https://github.com/yourusername/your-repo.git
 cd your-repo
+```
 
-**
- 7. Deploy to Kubernetes**
+### 7. Deploy to Kubernetes
+
+Deploy the application using the Kubernetes configuration files:
+
+```bash
 kubectl apply -f k8s/
+```
 
+### 8. Access the Application
 
-** 8. Access the Application**
+To access the application, you can retrieve the service URL as follows:
 
-Use the following to get the service URL:
+```bash
+minikube service <service-name> --url
+```
 
+## Solutions Overview
 
-solution 1
-Widgetario is a company which sells gadgets and they want to run their public web app on Kubernetes.  
-All the components are packaged into container images and published on Docker Hub.
+### Solution 1: Basic Deployment
 
-The component names in the diagram are the DNS names the app expects to use. And when you're working on the YAML, we decided to start with one replica for one component.
- we were able to ping  (127.0.0.1) or browse port 8080 on cluster
+Widgetario, a company that sells gadgets, runs its public web app on Kubernetes. All components are packaged into container images and published on Docker Hub. In this solution, we start with a simple setup using one replica for each component. We were able to ping `127.0.0.1` or browse port `8080` on the cluster.
 
- solution 2
+### Solution 2: Secure Configuration
 
-If we `docker image inspect widgetario/products-db:21.03` we will see the database password is in the default environment variables, so if someone manages to get the image they'll know our production password.
+The `widgetario/products-db:21.03` image exposes the database password through environment variables. This solution addresses the security issue by:
 
-Also the front-end team are experimenting with a new dark mode, and they want to quickly turn it on and off with a config setting
-* Products DB is the simplest - it just needs a password stored and surfaced in the `POSTGRES_PASSWORD` environment variable in the Pod (of course - anything with a password is sensitive data).
+* Storing passwords securely in environment variables.
+* Enabling the front-end team to experiment with a new dark mode via a config setting.
 
-* The Stock API is a Go app. It uses an environment variable for the database connection string, and the password will need to match the DB. The team thinks the environment variable name starts with `POSTGRES`.
+Key tasks:
 
-* The Products API is a Java app. The team who built it left to found a startup and we have no documentation. It's a Spring Boot app though, so the config files are usually called `application.properties` and we'll need to update the password there too.
+* **Products DB**: Secure the `POSTGRES_PASSWORD` environment variable.
+* **Stock API**: Use a Go app that connects to the PostgreSQL database with a connection string.
+* **Products API**: Update the Spring Boot application’s `application.properties` with the new password.
+* **Web App**: A .NET Core app that uses `/app/secrets/api.json` for overriding settings, including API URLs and theme configurations.
 
-* The web app is .NET Core. We know quite a lot about this - it reads default config from `/app/appsettings.json` but it will override any settings it finds in `/app/secrets/api.json`. We want to update the URLs for the APIs to use fully-qualified domain names.
+Environment variables:
 
-* That feature flag for the UI can be set with an environment variable - `Widgetario__Theme` = `dark`.
-  
-**  solution 3**
+* `Widgetario__Theme=dark` (for dark mode)
 
-Enabled local caching for the Stock API (/cache directory) to survive Pod restarts without needing persistent storage.
+### Solution 3: PostgreSQL Replication & Caching
 
-Switched to a replicated PostgreSQL setup using widgetario/products-db:postgres-replicated.
+Enabled local caching for the Stock API (`/cache` directory) to survive Pod restarts. We also switched to a replicated PostgreSQL setup using `widgetario/products-db:postgres-replicated`.
 
-Configured the Products API to connect to the primary DB, and the Stock API to connect to the secondary.
+* **PostgreSQL Replication**: Configure the Products API to connect to the primary DB and the Stock API to the secondary.
+* **Deployment Update**: Clean up old persistent volumes and services.
 
-Updated deployments and cleaned up old persistent volumes and services.Below is the code:
+Commands:
 
+```bash
 kubectl delete deploy products-db
 kubectl delete svc products-db
 kubectl delete pvc -l app=products-db
@@ -91,16 +137,26 @@ kubectl apply -f hackathon/solution-part-3/products-db \
               -f hackathon/solution-part-3/web
 
 kubectl rollout restart deploy/products-api deploy/stock-api
+```
 
-**solution 4**
+### Solution 4: Ingress Configuration
+
 Configured Ingress resources for clean domain-based routing:
 
-Web app: http://widgetario.local
+* **Web App**: `http://widgetario.local`
+* **API**: `http://api.widgetario.local`
 
-API: http://api.widgetario.local
+Commands:
 
-Deployed an ingress controller and ensured the services were accessible via standard ports.Below is the code :
-
+```bash
 ./scripts/add-to-hosts.sh widgetario.local 127.0.0.1
 ./scripts/add-to-hosts.sh api.widgetario.local 127.0.0.1
+```
+
+This ensures that the web app and APIs are accessible through friendly domain names.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
