@@ -1,28 +1,28 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Specifies the API version for the Deployment resource, which is apps/v1.
+kind: Deployment    # The kind of resource being defined is a Deployment.
 metadata:
-  name: stock-api
+  name: stock-api  # The name of the Deployment is 'stock-api', which indicates it manages Pods for the stock API.
   labels:
-    kubernetes.courselabs.co: hackathon
-    app: widgetario
+    kubernetes.courselabs.co: hackathon  # Custom label to categorize resources related to the hackathon project.
+    app: widgetario  # Label to indicate that this Deployment belongs to the widgetario application.
 spec:
   selector:
     matchLabels:
-        app: widgetario
-        component: stock-api
+      app: widgetario  # The Deployment selects Pods with the label 'app: widgetario'.
+      component: stock-api  # The Deployment specifically targets Pods labeled as 'component: stock-api'.
   template:
     metadata:
-      labels: 
-        app: widgetario
-        component: stock-api
-        hackathon: part-1
+      labels:
+        app: widgetario  # The Pods created by this Deployment will have the label 'app: widgetario'.
+        component: stock-api  # The Pods will also be labeled with 'component: stock-api'.
+        hackathon: part-1  # A custom label indicating that these Pods are part of the first phase of the hackathon project.
     spec:
       containers:
-        - name: app
-          image: widgetario/stock-api:21.03
+        - name: app  # The container's name is 'app'.
+          image: widgetario/stock-api:21.03  # The container runs the image 'widgetario/stock-api:21.03', which presumably contains the stock API.
           ports:
-            - containerPort: 8080
-              name: http
+            - containerPort: 8080  # The container exposes port 8080, which is likely used for the API's HTTP endpoints.
+              name: http  # The port name is 'http', which can be used to reference this port in other resources like a Service.
           envFrom:
-            - secretRef:
-                name: stock-api-connection
+            - secretRef:  # Environment variables are sourced from a Kubernetes Secret.
+                name: stock-api-connection  # The Secret named 'stock-api-connection' is used to load the environment variables into the container.
