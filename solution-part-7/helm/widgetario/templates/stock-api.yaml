@@ -1,84 +1,84 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-sapi
+  name: {{ .Release.Name }}-sapi  # Dynamically names the service based on the release name
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}  # Labels the service with the release name
 spec:
   ports:
-    - port: 80
-      targetPort: http
+    - port: 80  # Exposes port 80 for the service to be accessible internally in the cluster
+      targetPort: http  # Redirects the traffic to the 'http' port of the container
   selector:
-    app: {{ .Release.Name }}
-    component: stock-api
-  type: ClusterIP
+    app: {{ .Release.Name }}  # Matches the app label with the release name
+    component: stock-api  # Matches the component label with 'stock-api' for routing traffic
+  type: ClusterIP  # The service type is ClusterIP, meaning it's accessible within the cluster only
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-sapi-dbenv
+  name: {{ .Release.Name }}-sapi-dbenv  # Dynamically names the Secret based on the release name
 type: Opaque
 stringData:
-  POSTGRES_CONNECTION_STRING: "host={{ .Release.Name }}-pdb-0.{{ .Release.Name }}-pdb.{{ .Release.Namespace }}.svc.cluster.local port=5432 user={{ .Values.pdbUsername }} password={{ .Values.pdbPassword }} dbname=postgres sslmode=disable"
+  POSTGRES_CONNECTION_STRING: "host={{ .Release.Name }}-pdb-0.{{ .Release.Name }}-pdb.{{ .Release.Namespace }}.svc.cluster.local port=5432 user={{ .Values.pdbUsername }} password={{ .Values.pdbPassword }} dbname=postgres sslmode=disable"  # PostgreSQL connection string for accessing the database
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-sapi
+  name: {{ .Release.Name }}-sapi  # Dynamically names the deployment based on the release name
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}  # Labels the deployment with the release name
 spec:
-  replicas: {{ .Values.sapiReplicaCount }}
+  replicas: {{ .Values.sapiReplicaCount }}  # Defines the number of replicas based on values.yaml (scalable replicas)
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
-      component: stock-api
+      app: {{ .Release.Name }}  # Selects pods with the release name
+      component: stock-api  # Selects pods with the 'stock-api' component
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
-        component: stock-api
+        app: {{ .Release.Name }}  # Labels the pod with the release name
+        component: stock-api  # Labels the pod as part of the 'stock-api' component
       annotations:
-        prometheus.io/scrape: "true"
+        prometheus.io/scrape: "true"  # Enables Prometheus scraping for metrics from the pods
     spec:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: false  # Prevents automatic mounting of service account token into the container
       containers:
         - name: app
-          image: {{ .Values.sapiImage }}
+          image: {{ .Values.sapiImage }}  # Specifies the image for the stock-api container (from values.yaml)
           envFrom:
             - secretRef:
-                name: {{ .Release.Name }}-sapi-dbenv
+                name: {{ .Release.Name }}-sapi-dbenv  # Pulls environment variables from the secret (contains DB connection string)
           ports:
-            - containerPort: 8080
+            - containerPort: 8080  # Exposes port 8080 for the application inside the container
               name: http
-          {{- if eq .Values.includeReadiness true }}
+          {{- if eq .Values.includeReadiness true }}  # Conditionally include a readiness probe if specified in values.yaml
           readinessProbe:
             httpGet:
-              path: /healthz
-              port: http
-            periodSeconds: 30
-            failureThreshold: 1
+              path: /healthz  # URL path to check readiness
+              port: http  # Port to use for the readiness probe
+            periodSeconds: 30  # Frequency of the readiness check
+            failureThreshold: 1  # Number of failed checks before marking the pod as unready
           {{- end }}
-          {{- if eq .Values.includeLiveness true }}
+          {{- if eq .Values.includeLiveness true }}  # Conditionally include a liveness probe if specified in values.yaml
           livenessProbe:
             httpGet:
-              path: /healthz
-              port: http
-            periodSeconds: 60
-            initialDelaySeconds: 10
+              path: /healthz  # URL path to check liveness
+              port: http  # Port to use for the liveness probe
+            periodSeconds: 60  # Frequency of the liveness check
+            initialDelaySeconds: 10  # Delay before the first liveness check
           {{- end }}
-          {{- if eq .Values.includeResources true }}
+          {{- if eq .Values.includeResources true }}  # Conditionally include resource limits if specified in values.yaml
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi   
+              cpu: 100m  # Sets a CPU limit of 100 milli CPUs
+              memory: 100Mi  # Sets a memory limit of 100Mi (megabytes)
           {{- end }}   
           securityContext:
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: true  # Ensures the root filesystem is mounted as read-only for added security
           volumeMounts:
             - name: cache
-              mountPath: "/cache"
+              mountPath: "/cache"  # Mounts a volume at the /cache path in the container for temporary cache storage
       volumes:
         - name: cache
           emptyDir:
-            medium: Memory
+            medium: Memory  # Uses memory as the backing storage for the emptyDir volume (for fast, in-memory cache)
