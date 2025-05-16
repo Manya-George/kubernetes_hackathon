@@ -1,25 +1,25 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Specifies the API version of the Kubernetes resource (Deployment).
+kind: Deployment     # This is a Deployment resource that manages the lifecycle of Pods.
 metadata:
-  name: products-api
+  name: products-api  # The name of the Deployment.
   labels:
-    app: widgetario
-    kubernetes.courselabs.co: hackathon
+    app: widgetario  # Label indicating the app is part of the widgetario project.
+    kubernetes.courselabs.co: hackathon  # Custom label for identifying resources related to a hackathon project.
 spec:
   selector:
     matchLabels:
-        app: widgetario
-        component: products-api
-  template:
+      app: widgetario  # The Pods selected by this Deployment must have this label (app: widgetario).
+      component: products-api  # The Pods selected must also have this label (component: products-api).
+  template:  # The Pod template that defines the structure of the Pods.
     metadata:
       labels:
-        app: widgetario
-        component: products-api
-        hackathon: part-1
+        app: widgetario  # The Pods will be labeled with these keys and values.
+        component: products-api  # This label indicates these Pods are part of the "products-api" component.
+        hackathon: part-1  # Custom label for identifying the Pod as part of a specific part of the hackathon.
     spec:
       containers:
-        - name: app
-          image: widgetario/products-api:21.03
+        - name: app  # The name of the container inside the Pod.
+          image: widgetario/products-api:21.03  # The Docker image to be used for the container.
           ports:
-            - containerPort: 80
-              name: http
+            - containerPort: 80  # The container will expose port 80 (HTTP).
+              name: http  # The port is named "http" for clarity in networking configurations.
