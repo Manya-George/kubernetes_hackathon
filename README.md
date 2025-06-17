@@ -85,7 +85,7 @@ make stop        # Stops and removes all containers
 
 ## Project Structure
 
-
+ bash```
 load-balncer/
 │
 ├── server/
@@ -103,7 +103,7 @@ load-balncer/
 ├── docker-compose.yml     # Compose to deploy whole stack
 ├── Makefile               # Scripts to build, deploy, clean
 ├── README.md              # A documentation to explain everything 
-
+ ```
 
 
 ---
