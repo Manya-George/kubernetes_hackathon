@@ -81,29 +81,8 @@ make start       # Starts the full system (load balancer + 3 server replicas)
 make stop        # Stops and removes all containers
  
  ```
----
 
-## Project Structure
 
- bash```
-load-balncer/
-│
-├── server/
-│   ├── app.py             # Server code (Task 1)
-│   ├── Dockerfile         # Containerize server
-│
-├── load_balancer/
-│   ├── app.py             # Load balancer code (Tasks 2 & 3)
-│   ├── consistent_hash.py # Consistent hashing implementation
-│   ├── Dockerfile         # Containerize load balancer
-│
-├── tests/
-│   ├── test_load_balancer.py  # Automated tests (Task 4)
-│
-├── docker-compose.yml     # Compose to deploy whole stack
-├── Makefile               # Scripts to build, deploy, clean
-├── README.md              # A documentation to explain everything 
- ```
 
 
 ---
