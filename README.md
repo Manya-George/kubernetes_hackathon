@@ -28,8 +28,8 @@ Functions of a load balancer:
 
 ## Installation & Setup
 Installation
-1. Install Docker Engine
-bash
+1. **Install Docker Engine**
+ ```bash
 
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg lsb-release
@@ -40,30 +40,31 @@ echo \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
+ ```
 Verify Docker:
-bash
+ ```bash
 
 sudo docker --version
+ ```
 
-
-2. Install Docker Compose
-bash
+2. **Install Docker Compose**
+ ```bash
 
 sudo curl -SL https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-
+ ```
 Verify Docker Compose:
-bash
+ ```bash
 
 docker-compose --version
+ ```
 
-3. Install Git (if not installed)
-bash
+3. **Install Git (if not installed)**
+ ```bash
 
 sudo apt-get install -y git
-
+ ```
 
 4. **Clone the repository:**
 
@@ -72,13 +73,13 @@ sudo apt-get install -y git
    cd Load-Balncer
    ```
 
-5. **Build and run containers using Makefile (recommended)
-bash
+5. **Build and run containers using Makefile**
+ ```bash
 Copy code
 make build       # Builds all Docker images (server + load balancer)
 make start       # Starts the full system (load balancer + 3 server replicas)
 make stop        # Stops and removes all containers
-
+ ```
 
 ---
 
@@ -102,7 +103,7 @@ load-balncer/
 ├── docker-compose.yml     # Compose to deploy whole stack
 ├── Makefile               # Scripts to build, deploy, clean
 ├── README.md              # A documentation to explain everything 
-└── requirements.txt       # Python dependencies
+
 
 
 ---
