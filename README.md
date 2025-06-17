@@ -75,12 +75,12 @@ sudo apt-get install -y git
 
 5. **Build and run containers using Makefile**
  ```bash
-Copy code
+
 make build       # Builds all Docker images (server + load balancer)
 make start       # Starts the full system (load balancer + 3 server replicas)
 make stop        # Stops and removes all containers
  
-
+ ```
 ---
 
 ## Project Structure
