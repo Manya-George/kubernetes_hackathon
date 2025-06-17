@@ -79,13 +79,13 @@ Copy code
 make build       # Builds all Docker images (server + load balancer)
 make start       # Starts the full system (load balancer + 3 server replicas)
 make stop        # Stops and removes all containers
- ```
+ 
 
 ---
 
 ## Project Structure
 
-```
+
 load-balncer/
 │
 ├── server/
